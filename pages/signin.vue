@@ -1,7 +1,7 @@
 <template>
   <NuxtLayout name="default">
     <div class="d-flex align-center flex-column">
-      <v-card width="50%" min-width="400">
+      <v-card width="100%" min-width="400">
         <v-card-title>Sign in</v-card-title>
 
         <v-card-text>
@@ -44,7 +44,7 @@
 <script>
 import {mdiEye, mdiEyeOff} from "@mdi/js";
 import ApiProvider from "../api/api-provider";
-import {userInfo} from "../stores/user-info";
+import {dataStore} from "../stores/data-store";
 
 export default {
   data: () => ({
@@ -81,8 +81,10 @@ export default {
           this.parseValidation(response.errors)
         }
       } else {
-        await userInfo().setUserInfo(response.data)
-        useRouter().push('/')
+        await dataStore().setUserInfo(response.data)
+        let waitingForAuthorization = dataStore().getWaitingForAuthorization
+        useRouter().push(waitingForAuthorization ? waitingForAuthorization : '/')
+        waitingForAuthorization && dataStore().clearWaitingForAuthorization()
       }
     },
     register() {

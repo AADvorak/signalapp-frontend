@@ -1,6 +1,15 @@
+import {dataStore} from "~/stores/data-store";
+
 const ApiProvider = {
 
   BASE_URL: 'http://localhost:8080',
+
+  router: null,
+
+  setRouter(router) {
+    this.router = router
+    return this
+  },
 
   get(url, noHandleUnauthorized) {
     return fetch(this.BASE_URL + url, {
@@ -78,7 +87,8 @@ const ApiProvider = {
       return {...result, data}
     }
     if (response.status === 401 && !noHandleUnauthorized) {
-      // todo
+      dataStore().clearUserInfo()
+      this.router && this.router.push('/signin')
     }
     return {...result, errors: data}
   }

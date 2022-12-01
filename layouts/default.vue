@@ -19,6 +19,7 @@
           <v-list-item
               v-for="item in modulesForMenu"
               :key="item.module"
+              @click="toPage('/' + item.module.toLowerCase())"
           >
             <v-list-item-title>{{ item.name }}</v-list-item-title>
           </v-list-item>
@@ -45,6 +46,11 @@
         </v-list>
       </v-menu>
     </v-app-bar>
+    <v-app-bar>
+      <v-spacer></v-spacer>
+      <h2>{{ header }}</h2>
+      <v-spacer></v-spacer>
+    </v-app-bar>
     <v-main>
       <slot/>
     </v-main>
@@ -53,14 +59,14 @@
 
 <script>
 
-import {userInfo} from "../stores/user-info";
-import {modules} from "../stores/modules";
+import {dataStore} from "../stores/data-store";
 import ApiProvider from "../api/api-provider";
 
 export default {
   data() {
     return {
       darkMode: localStorage.getItem('darkMode') || false,
+      header: ''
     }
   },
   computed: {
@@ -68,13 +74,13 @@ export default {
       return this.darkMode ? 'dark' : 'light'
     },
     userButtonText() {
-      return userInfo().userRepresentingString
+      return dataStore().userRepresentingString
     },
     isSignedIn() {
-      return userInfo().isSignedIn
+      return dataStore().isSignedIn
     },
     modulesForMenu() {
-      return modules().getModulesForMenu
+      return dataStore().getModulesForMenu
     }
   },
   watch: {
@@ -85,16 +91,30 @@ export default {
   methods: {
     async signOut() {
       await ApiProvider.del('/api/sessions/')
-      userInfo().clearUserInfo()
+      dataStore().clearUserInfo()
     },
     toMainPage() {
-      useRouter().push('/')
+      this.toPage('/')
+    },
+    toPage(page) {
+      useRouter().push(page)
+    },
+    setHeaderByRoute() {
+      let routeName = useRoute().name
+      for (let module of dataStore().getAllModules) {
+        if (module.module.toLowerCase() === routeName) {
+          this.header = module.name
+          break
+        }
+      }
     }
   },
   mounted() {
-    if (!userInfo().isSignedIn) {
-      userInfo().loadUserInfo()
+    if (!dataStore().isSignedIn) {
+      dataStore().loadUserInfo()
     }
+    dataStore().loadModules()
+    this.setHeaderByRoute()
   }
 }
 </script>
