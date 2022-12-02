@@ -2,42 +2,44 @@
   <NuxtLayout name="default">
     <div class="d-flex align-center flex-column">
       <v-card width="100%">
-        <v-table>
-          <thead>
-          <tr>
-            <th class="text-left">
-              Name
-            </th>
-            <th class="text-left">
-              Description
-            </th>
-            <th class="text-left"></th>
-            <th class="text-left"></th>
-            <th class="text-left"></th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr v-for="signal in signals" @click="openSignal(signal)">
-            <td>{{ signal.name }}</td>
-            <td>{{ signal.description }}</td>
-            <td class="text-right">
-              <v-icon @click.stop="loadSignalWav(signal)">
-                {{ mdi.mdiFile }}
-              </v-icon>
-            </td>
-            <td class="text-right">
-              <v-icon @click.stop="playOrStopSignal(signal)">
-                {{ isSignalPlayed(signal) ? mdi.mdiStop : mdi.mdiPlay }}
-              </v-icon>
-            </td>
-            <td class="text-right">
-              <v-icon @click.stop="askConfirmDeleteSignal(signal)">
-                {{ mdi.mdiDelete }}
-              </v-icon>
-            </td>
-          </tr>
-          </tbody>
-        </v-table>
+        <v-card-text>
+          <v-table>
+            <thead>
+            <tr>
+              <th class="text-left">
+                Name
+              </th>
+              <th class="text-left">
+                Description
+              </th>
+              <th class="text-left"></th>
+              <th class="text-left"></th>
+              <th class="text-left"></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="signal in signals" @click="openSignal(signal)">
+              <td>{{ signal.name }}</td>
+              <td>{{ signal.description }}</td>
+              <td class="text-right">
+                <v-icon @click.stop="loadSignalWav(signal)">
+                  {{ mdi.mdiFile }}
+                </v-icon>
+              </td>
+              <td class="text-right">
+                <v-icon @click.stop="playOrStopSignal(signal)">
+                  {{ isSignalPlayed(signal) ? mdi.mdiStop : mdi.mdiPlay }}
+                </v-icon>
+              </td>
+              <td class="text-right">
+                <v-icon @click.stop="askConfirmDeleteSignal(signal)">
+                  {{ mdi.mdiDelete }}
+                </v-icon>
+              </td>
+            </tr>
+            </tbody>
+          </v-table>
+        </v-card-text>
       </v-card>
     </div>
     <confirm-dialog :opened="confirm.opened" :text="confirm.text"
@@ -71,8 +73,10 @@ export default {
     confirm: {
       opened: false,
       text: '',
-      ok: () => {},
-      cancel: () => {}
+      ok: () => {
+      },
+      cancel: () => {
+      }
     }
   }),
   methods: {
@@ -92,7 +96,7 @@ export default {
       }
     },
     openSignal(signal) {
-
+      useRouter().push('/signal/' + signal.id)
     },
     loadSignalWav(signal) {
 

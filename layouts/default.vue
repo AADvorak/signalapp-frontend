@@ -1,58 +1,62 @@
 <template>
   <v-app :theme="theme">
     <v-app-bar app>
-      <v-img
-          src="../img/oscilloscope-logo.png"
-          max-width="100"
-          @click="toMainPage"
+      <v-app-bar-nav-icon class="ml-4" @click="showMainMenu = !showMainMenu">
+      </v-app-bar-nav-icon>
+      <v-img class="ml-4"
+             src="../img/oscilloscope-logo.png"
+             max-width="80"
+             min-width="80"
+             @click="toMainPage"
       ></v-img>
-      <v-btn
-          color="primary"
-          dark
-          id="modulesMenuButton"
-          on=""
-      >
-        Modules
-      </v-btn>
-      <v-menu activator="#modulesMenuButton" offset-y>
-        <v-list>
-          <v-list-item
-              v-for="item in modulesForMenu"
-              :key="item.module"
-              @click="toPage('/' + item.module.toLowerCase())"
-          >
-            <v-list-item-title>{{ item.name }}</v-list-item-title>
-          </v-list-item>
-        </v-list>
-      </v-menu>
-      <v-switch hide-details v-model="darkMode"></v-switch>
       <v-spacer></v-spacer>
-      <v-btn
-          color="primary"
-          dark
-          id="userMenuButton"
-          on=""
-      >
+      <v-app-bar-title>{{ header }}</v-app-bar-title>
+      <v-spacer></v-spacer>
+      <v-btn color="primary">
         {{ isSignedIn ? userButtonText : 'User' }}
+        <v-menu activator="parent">
+          <v-list>
+            <v-list-item v-if="isSignedIn" @click="signOut">
+              <v-list-item-title>Sign out</v-list-item-title>
+            </v-list-item>
+            <v-list-item v-if="!isSignedIn" to="/signin">
+              <v-list-item-title>Sign in</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
       </v-btn>
-      <v-menu offset-y activator="#userMenuButton">
-        <v-list>
-          <v-list-item v-if="isSignedIn" @click="signOut">
-            <v-list-item-title>Sign out</v-list-item-title>
-          </v-list-item>
-          <v-list-item v-if="!isSignedIn" to="/signin">
-            <v-list-item-title>Sign in</v-list-item-title>
-          </v-list-item>
-        </v-list>
-      </v-menu>
-    </v-app-bar>
-    <v-app-bar>
-      <v-spacer></v-spacer>
-      <h2>{{ header }}</h2>
-      <v-spacer></v-spacer>
     </v-app-bar>
     <v-main>
-      <slot/>
+      <v-container width="100%" style="padding: 12px">
+        <v-row>
+          <v-col style="padding: 4px" v-if="showMainMenu" :cols="mainMenuCols" :sm="mainMenuCols" :md="mainMenuCols" :lg="mainMenuCols">
+            <v-card width="100%">
+              <v-card-title>Modules</v-card-title>
+              <v-card-text>
+                <v-list>
+                  <v-list-item
+                      v-for="item in modulesForMenu"
+                      :key="item.module"
+                      @click="toPage('/' + item.module.toLowerCase())"
+                  >
+                    <v-list-item-title>{{ item.name }}</v-list-item-title>
+                  </v-list-item>
+                </v-list>
+              </v-card-text>
+            </v-card>
+            <v-card width="100%">
+              <v-card-title>Page settings</v-card-title>
+              <v-card-text>
+                <v-switch hide-details v-model="darkMode" :label="`Dark mode: ${darkModeStr}`">
+                </v-switch>
+              </v-card-text>
+            </v-card>
+          </v-col>
+          <v-col style="padding: 4px" :cols="pageCols" :sm="pageCols" :md="pageCols" :lg="pageCols">
+            <slot/>
+          </v-col>
+        </v-row>
+      </v-container>
     </v-main>
   </v-app>
 </template>
@@ -66,12 +70,17 @@ export default {
   data() {
     return {
       darkMode: localStorage.getItem('darkMode') || false,
-      header: ''
+      header: '',
+      showMainMenu: false,
+      mainMenuCols: 3,
     }
   },
   computed: {
     theme() {
       return this.darkMode ? 'dark' : 'light'
+    },
+    darkModeStr() {
+      return this.darkMode ? 'on' : 'off'
     },
     userButtonText() {
       return dataStore().userRepresentingString
@@ -81,6 +90,9 @@ export default {
     },
     modulesForMenu() {
       return dataStore().getModulesForMenu
+    },
+    pageCols() {
+      return this.showMainMenu ? 12 - this.mainMenuCols : 12
     }
   },
   watch: {
@@ -92,6 +104,7 @@ export default {
     async signOut() {
       await ApiProvider.del('/api/sessions/')
       dataStore().clearUserInfo()
+      this.toMainPage()
     },
     toMainPage() {
       this.toPage('/')

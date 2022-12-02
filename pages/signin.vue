@@ -2,8 +2,6 @@
   <NuxtLayout name="default">
     <div class="d-flex align-center flex-column">
       <v-card width="100%" min-width="400">
-        <v-card-title>Sign in</v-card-title>
-
         <v-card-text>
           <v-form @submit.prevent="loginRequest">
             <v-text-field
@@ -45,6 +43,7 @@
 import {mdiEye, mdiEyeOff} from "@mdi/js";
 import ApiProvider from "../api/api-provider";
 import {dataStore} from "../stores/data-store";
+import formValidation from "../mixins/form-validation"
 
 export default {
   data: () => ({
@@ -60,21 +59,10 @@ export default {
       password: []
     },
   }),
+  mixins: [formValidation],
   methods: {
-    // todo to abstract component or mixin
-    parseValidation(errors) {
-      for (let error of errors) {
-        this.validation[error.field]?.push(error.message)
-      }
-    },
-    resetValidation() {
-      this.validation = {
-        email: [],
-        password: []
-      }
-    },
     async loginRequest() {
-      this.resetValidation()
+      this.clearValidation()
       let response = await ApiProvider.postJson('/api/sessions/', this.form)
       if (!response.ok) {
         if (response.status === 400) {
