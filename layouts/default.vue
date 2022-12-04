@@ -69,7 +69,7 @@ import ApiProvider from "../api/api-provider";
 export default {
   data() {
     return {
-      darkMode: localStorage.getItem('darkMode') || false,
+      darkMode: false,
       header: '',
       showMainMenu: false,
       mainMenuCols: 3,
@@ -115,7 +115,7 @@ export default {
     setHeaderByRoute() {
       let routeName = useRoute().name
       for (let module of dataStore().getAllModules) {
-        if (module.module.toLowerCase() === routeName) {
+        if (routeName.startsWith(module.module.toLowerCase())) {
           this.header = module.name
           break
         }
@@ -123,6 +123,7 @@ export default {
     }
   },
   mounted() {
+    this.darkMode = localStorage.getItem('darkMode') === 'true'
     if (!dataStore().isSignedIn) {
       dataStore().loadUserInfo()
     }

@@ -19,6 +19,7 @@ export const dataStore = defineStore('dataStore', {
           {module: 'SignalManager', name: 'Signal manager', container: 'main', forMenu: true},
           {module: 'ModuleManager', name: 'Module manager', container: 'main', forMenu: true},
           {module: 'SignIn', name: 'Sign in', container: 'main', forMenu: false},
+          {module: 'Signal', name: 'Signal', container: 'main', forMenu: false},
           {module: 'index', name: 'Start page', container: 'main', forMenu: false},
         ],
         user: []
@@ -28,12 +29,20 @@ export const dataStore = defineStore('dataStore', {
   },
   getters: {
     userRepresentingString: (state) => {
-      // todo
-      const userInfo = state.userInfo
-      if (userInfo.firstName && userInfo.lastName) {
-        return userInfo.firstName + ' ' + userInfo.lastName
+      const user = state.userInfo
+      if (user.firstName && user.lastName && user.patronymic) {
+        return user.firstName.substring(0, 1) + '.' + user.patronymic.substring(0, 1) + '. ' + user.lastName
       }
-      return userInfo.email
+      if (user.firstName && user.lastName) {
+        return user.firstName.substring(0, 1) + '. ' + user.lastName
+      }
+      if (user.firstName) {
+        return user.firstName
+      }
+      if (user.lastName) {
+        return user.lastName
+      }
+      return user.email
     },
     isSignedIn: (state) => {
       return !!state.userInfo.id
@@ -43,6 +52,9 @@ export const dataStore = defineStore('dataStore', {
     },
     getModulesForMenu: state => {
       return [...state.modules.base, ...state.modules.user].filter(module => module.forMenu)
+    },
+    getTransformers: state => {
+      return state.modules.user.filter(module => module.transformer)
     },
     getWaitingForAuthorization: state => {
       return state.waitingForAuthorization
@@ -70,7 +82,7 @@ export const dataStore = defineStore('dataStore', {
     async loadModules() {
       let response = await ApiProvider.get('/api/modules')
       if (response.ok) {
-        this.user = response.data
+        this.modules.user = response.data
       }
     },
     setWaitingForAuthorization(waitingForAuthorization) {

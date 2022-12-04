@@ -54,9 +54,9 @@ import {mdiPlay} from "@mdi/js";
 import {mdiStop} from "@mdi/js";
 import {mdiFile} from "@mdi/js";
 import ApiProvider from "../api/api-provider";
-import {dataStore} from "../stores/data-store";
 import SignalPlayer from "../audio/signal-player";
 import ConfirmDialog from "../components/confirm-dialog";
+import FileUtils from "../utils/file-utils";
 
 export default {
   name: "signalmanager",
@@ -80,26 +80,20 @@ export default {
     }
   }),
   methods: {
-    handleUnauthorizedResponse(response) {
-      if (response.status === 401) {
-        dataStore().setWaitingForAuthorization({
-          path: '/signalmanager'
-        })
-      }
+    getApiProvider() {
+      return ApiProvider.setRouter(useRouter()).setRoute(useRoute())
     },
     async loadSignals() {
-      let response = await ApiProvider.setRouter(useRouter()).get('/api/signals')
+      let response = await this.getApiProvider().get('/api/signals')
       if (response.ok) {
         this.signals = response.data
-      } else {
-        this.handleUnauthorizedResponse(response)
       }
     },
     openSignal(signal) {
       useRouter().push('/signal/' + signal.id)
     },
     loadSignalWav(signal) {
-
+      FileUtils.saveSignalToWavFile(signal)
     },
     async playOrStopSignal(signal) {
       if (this.isSignalPlayed(signal)) {
@@ -131,11 +125,9 @@ export default {
       }
     },
     async deleteSignal(signal) {
-      let response = await ApiProvider.setRouter(useRouter()).del('/api/signals/' + signal.id)
+      let response = await this.getApiProvider().del('/api/signals/' + signal.id)
       if (response.ok) {
         await this.loadSignals()
-      } else {
-        this.handleUnauthorizedResponse(response)
       }
     },
   },

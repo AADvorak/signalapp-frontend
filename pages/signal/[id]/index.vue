@@ -24,19 +24,26 @@
             </v-textarea>
 
             <div class="d-flex">
-              <v-btn>
+              <v-btn color="primary">
                 Send
+                <v-menu activator="parent">
+                  <v-list>
+                    <v-list-item v-for="transformer of transformers" @click="sendToTransformer(transformer)">
+                      <v-list-item-title>{{ transformer.name }}</v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
               </v-btn>
-              <v-btn color="success" class="mr-4" @click="saveSignal">
+              <v-btn color="success" @click="saveSignal">
                 Save
               </v-btn>
-              <v-btn v-if="signal.id">
+              <v-btn color="secondary" v-if="signal.id">
                 Save as new
               </v-btn>
-              <v-btn>
+              <v-btn color="secondary">
                 Export txt
               </v-btn>
-              <v-btn>
+              <v-btn color="secondary">
                 Export wav
               </v-btn>
             </div>
@@ -50,6 +57,7 @@
 <script>
 import ApiProvider from "../../../api/api-provider";
 import ChartDrawer from "../../../components/chart-drawer";
+import {dataStore} from "../../../stores/data-store";
 
 export default {
   name: "index",
@@ -61,9 +69,20 @@ export default {
       description: []
     }
   }),
+  computed: {
+    transformers() {
+      return dataStore().getTransformers
+    }
+  },
   methods: {
+    getApiProvider() {
+      return ApiProvider.setRouter(useRouter()).setRoute(useRoute())
+    },
+    sendToTransformer(transformer) {
+
+    },
     async loadSignal(id) {
-      let response = await ApiProvider.get('/api/signals/' + id)
+      let response = await this.getApiProvider().get('/api/signals/' + id)
       if (response.ok) {
         this.signal = response.data
       }
