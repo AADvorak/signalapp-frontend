@@ -1,4 +1,4 @@
-import { defineStore } from 'pinia'
+import {defineStore} from 'pinia'
 import ApiProvider from "~/api/api-provider";
 
 export const dataStore = defineStore('dataStore', {
@@ -25,6 +25,7 @@ export const dataStore = defineStore('dataStore', {
         user: []
       },
       waitingForAuthorization: null,
+      signalHistory: {}
     }
   },
   getters: {
@@ -101,6 +102,26 @@ export const dataStore = defineStore('dataStore', {
         emailConfirmed: null
       }
       localStorage.setItem('userInfo', '')
+    },
+    addSignalToHistory(signal) {
+      let historyKey = String(signal.id || 0)
+      if (!this.signalHistory[historyKey]) {
+        this.signalHistory[historyKey] = []
+      }
+      let numberOfSignalInHistory = this.signalHistory[historyKey].length
+      this.signalHistory[historyKey].push(JSON.stringify(signal))
+      return `${historyKey}-${numberOfSignalInHistory}`
+    },
+    getSignalFromHistory(signalKey) {
+      let signalKeySplit = signalKey.split('-')
+      let historyKey = signalKeySplit[0], numberOfSignalInHistory = signalKeySplit[1]
+      let value = this.signalHistory[historyKey]?.[numberOfSignalInHistory]
+      if (value) {
+        return JSON.parse(value)
+      }
+    },
+    clearSignalHistory() {
+      this.signalHistory = {}
     }
   },
 })

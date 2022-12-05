@@ -16,6 +16,7 @@
     "@pinia/nuxt": "^0.4.1",
     "highcharts": "^10.3.2",
     "highcharts-vue": "^1.4.0",
+    "mitt": "^3.0.0",
     "pinia": "^2.0.20",
     "vue": "^3.2.33",
     "vue-draggable-next": "^2.1.1",

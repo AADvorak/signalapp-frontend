@@ -1,3 +1,26 @@
+/**
+ * @typedef {Object} Signal
+ * @property {number} [id]
+ * @property {string} name
+ * @property {string} description
+ * @property {SignalData[]} [data]
+ * @property {SignalParams} params
+ */
+
+/**
+ * @typedef {Object} SignalParams
+ * @property {number} xMin
+ * @property {number} xMax
+ * @property {number} step
+ * @property {number} length
+ */
+
+/**
+ * @typedef {Object} SignalData
+ * @property {number} x
+ * @property {number} y
+ */
+
 const SignalUtils = {
 
   difEqMethod: 'Euler',
@@ -143,6 +166,61 @@ const SignalUtils = {
       x += step
     }
     return grid
+  },
+
+  /**
+   * @param {Signal} signal
+   */
+  integrate(signal) {
+    return this.transformWithFunction(signal, this.integrateStep)
+  },
+
+  /**
+   * @param {Number} prevY
+   * @param {SignalData} data1
+   * @param {SignalData} data2
+   */
+  integrateStep(prevY, data1, data2) {
+    return prevY + (data2.x - data1.x) * (data2.y + data1.y) / 2
+  },
+
+  /**
+   * @param {Signal} signal
+   */
+  differentiate(signal) {
+    return this.transformWithFunction(signal, this.differentiateStep)
+  },
+
+  /**
+   * @param {Number} prevY
+   * @param {SignalData} data1
+   * @param {SignalData} data2
+   */
+  differentiateStep(prevY, data1, data2) {
+    return (data2.y - data1.y) / (data2.x - data1.x)
+  },
+
+  /**
+   * @param {Signal} signal
+   * @param {Function<SignalData,SignalData>} func
+   */
+  transformWithFunction(signal, func) {
+    let data = signal.data
+    let output = []
+    output.push({
+      x: data[0].x,
+      y: 0
+    })
+    let currY = 0
+    for (let i = 1; i < data.length; i++) {
+      currY = func(currY, data[i-1], data[i])
+      output.push({
+        x: data[i].x,
+        y: currY
+      })
+    }
+    signal.data = output
+    return signal
   }
 
 }
