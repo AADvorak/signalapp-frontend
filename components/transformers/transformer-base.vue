@@ -5,6 +5,7 @@
 <script>
 import formValidation from "../../mixins/form-validation";
 import {dataStore} from "../../stores/data-store";
+import formValuesSaving from "../../mixins/form-values-saving";
 
 export default {
   name: "TransformerBase",
@@ -12,12 +13,7 @@ export default {
     signal: Object,
     bus: Object
   },
-  mixins: [formValidation],
-  computed: {
-    formValuesKey() {
-      return this.$options.name + 'FormValues'
-    }
-  },
+  mixins: [formValidation, formValuesSaving],
   methods: {
     doTransform() {
       if (this.form) {
@@ -49,20 +45,6 @@ export default {
       }
       return !invalidMsg
     },
-    saveFormValues() {
-      localStorage.setItem(this.formValuesKey, JSON.stringify(this.form))
-    },
-    restoreFormValues() {
-      let values = localStorage.getItem(this.formValuesKey)
-      if (values) {
-        let parsedValues = JSON.parse(values)
-        for (let key in parsedValues) {
-          if (parsedValues.hasOwnProperty(key) && this.form.hasOwnProperty(key)) {
-            this.form[key] = parsedValues[key]
-          }
-        }
-      }
-    }
   },
   mounted() {
     this.form && this.restoreFormValues()
