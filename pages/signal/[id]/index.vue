@@ -40,12 +40,12 @@
               <v-btn color="secondary" v-if="signal.id" @click="saveSignalAsNew">
                 Save as new
               </v-btn>
-<!--              <v-btn color="secondary">-->
-<!--                Export txt-->
-<!--              </v-btn>-->
-<!--              <v-btn color="secondary">-->
-<!--                Export wav-->
-<!--              </v-btn>-->
+              <v-btn color="secondary" @click="exportSignalToTxt">
+                Export txt
+              </v-btn>
+              <v-btn color="secondary" v-if="!signalIsStoredLocally" @click="exportSignalToWav">
+                Export wav
+              </v-btn>
             </div>
           </v-form>
         </v-card-text>
@@ -60,7 +60,6 @@
 </template>
 
 <script>
-import ApiProvider from "../../../api/api-provider";
 import ChartDrawer from "../../../components/chart-drawer";
 import {dataStore} from "../../../stores/data-store";
 import TransformerDialog from "../../../components/transformer-dialog";
@@ -73,17 +72,20 @@ import SelfCorrelator from "../../../components/transformers/self-correlator";
 import SpectrumAnalyser from "../../../components/transformers/spectrum-analyser";
 import LinearOscillator from "../../../components/transformers/linear-oscillator";
 import mitt from 'mitt'
-import Message from "../../../components/message";
 import formValidation from "../../../mixins/form-validation";
+import PageBase from "../../../components/page-base";
+import FileUtils from "../../../utils/file-utils";
 
 export default {
   name: "index",
+  extends: PageBase,
   components: {
-    Message, TransformerDialog, ChartDrawer, LinearAmp,
+    TransformerDialog, ChartDrawer, LinearAmp,
     DummyTransformer, Integrator, Differentiator, Inverter,
     SelfCorrelator, SpectrumAnalyser, LinearOscillator
   },
   data: () => ({
+    signalKey: '',
     signal: {},
     validation: {
       name: [],
@@ -96,11 +98,6 @@ export default {
       ok: () => {
       }
     },
-    message: {
-      opened: false,
-      text: '',
-      onHide: () => {}
-    },
     bus: new mitt()
   }),
   mixins: [formValidation],
@@ -111,11 +108,11 @@ export default {
     signalIsSaved() {
       return !!this.signal.id
     },
+    signalIsStoredLocally() {
+      return this.signalKey.includes('-')
+    }
   },
   methods: {
-    getApiProvider() {
-      return ApiProvider.setRouter(useRouter()).setRoute(useRoute())
-    },
     sendToTransformer(transformer) {
       this.transformerDialog.selectedTransformer = transformer.module
       this.transformerDialog.title = transformer.name
@@ -140,9 +137,9 @@ export default {
       this.clearValidation()
       let response
       if (this.signalIsSaved) {
-        response = await ApiProvider.putJson('/api/signals/' + this.signal.id, this.signal)
+        response = await this.getApiProvider().putJson('/api/signals/' + this.signal.id, this.signal)
       } else {
-        response = await ApiProvider.postJson('/api/signals/', this.signal)
+        response = await this.getApiProvider().postJson('/api/signals/', this.signal)
       }
       if (response.ok) {
         dataStore().clearSignalHistory()
@@ -166,25 +163,24 @@ export default {
         }
       })
     },
-    showMessage({text, onHide}) {
-      this.message = {
-        opened: true,
-        text,
-        onHide
-      }
-    }
+    exportSignalToTxt() {
+      FileUtils.saveSignalToTxtFile(this.signal)
+    },
+    exportSignalToWav() {
+      FileUtils.saveSignalToWavFile(this.signal)
+    },
   },
   mounted() {
-    let signalKey = this.$route.params.id
-    if (signalKey.includes('-')) {
-      let signal = dataStore().getSignalFromHistory(signalKey)
+    this.signalKey = this.$route.params.id
+    if (this.signalIsStoredLocally) {
+      let signal = dataStore().getSignalFromHistory(this.signalKey)
       if (signal) {
         this.signal = signal
       } else {
         this.signalNotFound()
       }
     } else {
-      let signalId = parseInt(signalKey)
+      let signalId = parseInt(this.signalKey)
       if (!isNaN(signalId)) {
         this.loadSignal(signalId)
       } else {

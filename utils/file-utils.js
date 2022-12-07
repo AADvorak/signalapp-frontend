@@ -20,7 +20,6 @@ const FileUtils = {
   },
 
   saveToFile(href, fileName) {
-    console.log(href, fileName)
     let element = document.createElement('a')
     element.setAttribute('href', href)
     element.setAttribute('download', fileName)
@@ -30,17 +29,16 @@ const FileUtils = {
     document.body.removeChild(element)
   },
 
-  readSignalFromTxtFile(fileInp) {
-    return this.readFromFile(fileInp).then(result => this.txtToSignalData(result))
+  readSignalFromTxtFile(file) {
+    return this.readFromFile(file).then(result => this.txtToSignalData(result))
   },
 
-  readSignalFromWavFile(fileInp) {
-    return this.readFromFile(fileInp, 'readAsArrayBuffer')
+  readSignalFromWavFile(file) {
+    return this.readFromFile(file, 'readAsArrayBuffer')
   },
 
-  readFromFile(fileInp, readFunc) {
+  readFromFile(file, readFunc) {
     return new Promise((resolve, reject) => {
-      let file = fileInp.prop('files')[0]
       let reader = new FileReader()
       reader[readFunc || 'readAsText'](file)
       reader.onload = () => {

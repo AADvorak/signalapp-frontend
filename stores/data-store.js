@@ -17,7 +17,6 @@ export const dataStore = defineStore('dataStore', {
           {module: 'SignalGenerator', name: 'Signal generator', container: 'left', forMenu: true},
           {module: 'SignalRecorder', name: 'Signal recorder', container: 'left', forMenu: true},
           {module: 'SignalManager', name: 'Signal manager', container: 'main', forMenu: true},
-          {module: 'ModuleManager', name: 'Module manager', container: 'main', forMenu: true},
           {module: 'SignIn', name: 'Sign in', container: 'main', forMenu: false},
           {module: 'Signal', name: 'Signal', container: 'main', forMenu: false},
           {module: 'index', name: 'Start page', container: 'main', forMenu: false},

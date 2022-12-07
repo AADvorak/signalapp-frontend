@@ -78,7 +78,20 @@
           </v-form>
         </v-card-text>
       </v-card>
+      <v-card width="100%" min-width="400">
+        <v-card-title>
+          Import
+        </v-card-title>
+        <v-card-text>
+          <v-file-input
+              v-model="file"
+              accept=".txt,.wav"
+              label="From txt or wav file"
+          ></v-file-input>
+        </v-card-text>
+      </v-card>
     </div>
+    <message :opened="message.opened" :text="message.text" @hide="message.onHide"></message>
   </NuxtLayout>
 </template>
 
@@ -86,11 +99,16 @@
 import formValidation from "../mixins/form-validation";
 import formValuesSaving from "../mixins/form-values-saving";
 import {dataStore} from "../stores/data-store";
+import FileUtils from "../utils/file-utils";
+import ApiProvider from "../api/api-provider";
+import PageBase from "../components/page-base";
 
 export default {
   name: "signalgenerator",
+  extends: PageBase,
   mixins: [formValidation, formValuesSaving],
   data: () => ({
+    file: [],
     form: {
       begin: 0,
       length: 0.1,
@@ -150,7 +168,7 @@ export default {
       amplitude(values, ctx) {
         if (values.amplitude < 0) return ctx.VALIDATION_MSG.greaterThanZero
       },
-    },
+    }
   }),
   computed: {
     signalForms() {
@@ -159,6 +177,19 @@ export default {
         forms.push(form)
       }
       return forms
+    }
+  },
+  watch: {
+    file(newValue) {
+      let file = newValue[0]
+      switch (file.type) {
+        case 'audio/wav':
+          this.importFromWavFile(file)
+          break
+        case 'text/plain':
+          this.importFromTxtFile(file)
+          break
+      }
     }
   },
   methods: {
@@ -174,13 +205,12 @@ export default {
         let y = this.SIGNAL_FORMS[this.form.form]({x, ...this.form})
         data.push({x, y})
       }
-      let signalKey = dataStore().addSignalToHistory({
+      this.saveSignalToHistoryAndOpen({
         id: 0,
         name: `Generated ${this.form.form} signal`,
         description: `B = ${this.form.begin}, L = ${this.form.length}, S = ${this.form.sampleRate}, F = ${this.form.frequency}, A = ${this.form.amplitude}, O = ${this.form.offset} (${data.length} points)`,
         data
       })
-      useRouter().push('/signal/' + signalKey)
     },
     validateForm() {
       let validated = true
@@ -204,6 +234,33 @@ export default {
       }
       return validated
     },
+    async importFromTxtFile(file) {
+      let data = await FileUtils.readSignalFromTxtFile(file)
+      this.saveSignalToHistoryAndOpen({
+        name: file.name,
+        description: `Imported from file ${file.name}`,
+        data
+      })
+    },
+    async importFromWavFile(file) {
+      let data = await FileUtils.readSignalFromWavFile(file)
+      let response = await this.getApiProvider().post('/api/signals/wav/' + file.name,
+          data, 'audio/wave')
+      if (response && response.ok) {
+        useRouter().push('/signalmanager')
+      } else {
+        let errorMsg = ''
+        for (let error of response.errors) {
+          error.message && (errorMsg += errorMsg ? ', ' + error.message : error.message)
+        }
+        this.showMessage({
+          text: 'Error uploading file' +(errorMsg ? ': ' + errorMsg : '')
+        })
+      }
+    },
+    saveSignalToHistoryAndOpen(signal) {
+      useRouter().push('/signal/' + dataStore().addSignalToHistory(signal))
+    }
   },
   mounted() {
     this.restoreFormValues()

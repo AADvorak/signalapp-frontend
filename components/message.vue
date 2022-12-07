@@ -6,14 +6,13 @@
   >
     <v-card width="100%">
       <v-card-title>Message</v-card-title>
-
       <v-card-text>
         <div class="d-flex">
           {{ text }}
         </div>
         <div class="d-flex mt-4">
           <v-btn @click="hide">
-            Ok
+            OK
           </v-btn>
         </div>
       </v-card-text>

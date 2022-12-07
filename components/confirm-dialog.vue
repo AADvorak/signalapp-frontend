@@ -1,5 +1,4 @@
 <template>
-
   <v-dialog
       v-model="opened"
       persistent
@@ -7,25 +6,21 @@
   >
     <v-card width="100%">
       <v-card-title>Confirmation</v-card-title>
-
       <v-card-text>
         <div class="d-flex mb-4">
           {{ text }}
         </div>
-
         <div class="d-flex">
           <v-btn color="success" class="mr-4" @click="ok">
-            Ok
+            OK
           </v-btn>
           <v-btn @click="cancel">
             Cancel
           </v-btn>
         </div>
-
       </v-card-text>
     </v-card>
   </v-dialog>
-
 </template>
 
 <script>

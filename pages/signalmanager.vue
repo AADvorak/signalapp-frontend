@@ -53,14 +53,13 @@ import {mdiDelete} from "@mdi/js";
 import {mdiPlay} from "@mdi/js";
 import {mdiStop} from "@mdi/js";
 import {mdiFile} from "@mdi/js";
-import ApiProvider from "../api/api-provider";
 import SignalPlayer from "../audio/signal-player";
-import ConfirmDialog from "../components/confirm-dialog";
 import FileUtils from "../utils/file-utils";
+import PageBase from "../components/page-base";
 
 export default {
   name: "signalmanager",
-  components: {ConfirmDialog},
+  extends: PageBase,
   data: () => ({
     signals: [],
     playedSignal: null,
@@ -70,19 +69,8 @@ export default {
       mdiStop,
       mdiFile
     },
-    confirm: {
-      opened: false,
-      text: '',
-      ok: () => {
-      },
-      cancel: () => {
-      }
-    }
   }),
   methods: {
-    getApiProvider() {
-      return ApiProvider.setRouter(useRouter()).setRoute(useRoute())
-    },
     async loadSignals() {
       let response = await this.getApiProvider().get('/api/signals')
       if (response.ok) {
@@ -112,17 +100,12 @@ export default {
       return this.playedSignal === signal
     },
     askConfirmDeleteSignal(signal) {
-      this.confirm = {
-        opened: true,
+      this.askConfirm({
         text: `Are you sure to delete signal ${signal.name}?`,
         ok: () => {
-          this.confirm.opened = false
           this.deleteSignal(signal)
-        },
-        cancel: () => {
-          this.confirm.opened = false
         }
-      }
+      })
     },
     async deleteSignal(signal) {
       let response = await this.getApiProvider().del('/api/signals/' + signal.id)
