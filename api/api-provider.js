@@ -2,7 +2,7 @@ import {dataStore} from "~/stores/data-store";
 
 const ApiProvider = {
 
-  BASE_URL: 'http://localhost:8080',
+  BASE_URL: window.location.port === '3000' ? 'http://localhost:8080' : '',
 
   router: null,
   route: null,
@@ -19,7 +19,7 @@ const ApiProvider = {
 
   get(url, noHandleUnauthorized) {
     return fetch(this.BASE_URL + url, {
-        credentials: 'include'
+      credentials: 'include'
     })
         .then(response => this.parseResponse(response, noHandleUnauthorized))
         .catch(error => error)

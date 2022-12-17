@@ -6,3 +6,4 @@
 out/
 /.nuxt/
 /node_modules/
+/.output/
