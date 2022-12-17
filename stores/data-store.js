@@ -24,7 +24,8 @@ export const dataStore = defineStore('dataStore', {
         user: []
       },
       waitingForAuthorization: null,
-      signalHistory: {}
+      signalHistory: {},
+      recordedAudio: null,
     }
   },
   getters: {
@@ -59,6 +60,9 @@ export const dataStore = defineStore('dataStore', {
     getWaitingForAuthorization: state => {
       return state.waitingForAuthorization
     },
+    getRecordedAudio: state => {
+      return state.recordedAudio
+    }
   },
   actions: {
     async loadUserInfo() {
@@ -121,6 +125,9 @@ export const dataStore = defineStore('dataStore', {
     },
     clearSignalHistory() {
       this.signalHistory = {}
+    },
+    setRecordedAudio(recordedAudio) {
+      this.recordedAudio = recordedAudio
     }
   },
 })
