@@ -25,6 +25,8 @@ const SignalUtils = {
 
   difEqMethod: 'Euler',
 
+  MAX_DRAWING_SIGNAL_LENGTH: 20000,
+
   /**
    *
    * @param {SignalData[]} inData
@@ -145,7 +147,7 @@ const SignalUtils = {
       return 0.0
     }
     let i = Math.round((x - signal.params.xMin) / signal.params.step)
-    return signal.data[i].y
+    return signal.data[i]?.y || 0.0
   },
 
   /**
@@ -159,6 +161,7 @@ const SignalUtils = {
       if (signal.params.xMin < xMin) xMin = signal.params.xMin
       if (signal.params.xMax > xMax) xMax = signal.params.xMax
     }
+    step = this.increaseStepToReducePointsNumber(step, xMin, xMax)
     let grid = []
     let x = xMin
     while (x <= xMax) {
@@ -166,6 +169,22 @@ const SignalUtils = {
       x += step
     }
     return grid
+  },
+
+  increaseStepToReducePointsNumber(step, xMin, xMax) {
+    const checkNumberOfPoints = (step, xMin, xMax) => {
+      return ((xMax - xMin) / step) <= this.MAX_DRAWING_SIGNAL_LENGTH
+    }
+    if (checkNumberOfPoints(step, xMin, xMax)) {
+      return step
+    }
+    let multiplier = 2
+    while (true) {
+      if (checkNumberOfPoints(step * multiplier, xMin, xMax)) {
+        return step * multiplier
+      }
+      multiplier++
+    }
   },
 
   /**
