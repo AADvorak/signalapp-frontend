@@ -46,12 +46,22 @@ export default {
     openSignalManager() {
 
     },
+    makeUrlParams(query) {
+      let params = ''
+      for (const key in query) {
+        if (key !== 'goto') {
+          const nameValue = key + '=' + query[key]
+          params += params ? '&' + nameValue : nameValue
+        }
+      }
+      return params ? '?' + params : params
+    }
   },
   mounted() {
     const route = useRoute()
     const goto = ref(route.query.goto)
     if (goto.value) {
-      useRouter().push('/' + goto.value)
+      useRouter().push('/' + goto.value + this.makeUrlParams(route.query))
     }
   }
 }
