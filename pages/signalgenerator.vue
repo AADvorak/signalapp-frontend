@@ -100,7 +100,6 @@ import formValidation from "../mixins/form-validation";
 import formValuesSaving from "../mixins/form-values-saving";
 import {dataStore} from "../stores/data-store";
 import FileUtils from "../utils/file-utils";
-import ApiProvider from "../api/api-provider";
 import PageBase from "../components/page-base";
 
 export default {
@@ -254,8 +253,9 @@ export default {
           error.message && (errorMsg += errorMsg ? ', ' + error.message : error.message)
         }
         this.showMessage({
-          text: 'Error uploading file' +(errorMsg ? ': ' + errorMsg : '')
+          text: 'Error uploading file' + (errorMsg ? ': ' + errorMsg : '')
         })
+        // todo clear file input
       }
     },
     saveSignalToHistoryAndOpen(signal) {
